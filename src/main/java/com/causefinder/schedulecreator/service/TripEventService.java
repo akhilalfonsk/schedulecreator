@@ -114,6 +114,12 @@ public class TripEventService {
             newTripEvent.setBusStopLatitude(stopInfo.getLatitude());
             newTripEvent.setBusStopLongitude(stopInfo.getLongitude());
 
+            trip.getScheduledEvents().getLast().setNextBusStopId(stopInfo.getStopid());
+            trip.getScheduledEvents().getLast().setNextBusStopName(stopInfo.getShortname());
+
+            newTripEvent.setPreviousBusStopId(trip.getScheduledEvents().getLast().getBusStopId());
+            newTripEvent.setPreviousBusStopName(trip.getScheduledEvents().getLast().getBusStopName());
+
             if(Objects.nonNull(matchingSchedule)){
                 newTripEvent.setScheduledArrivalTime(matchingSchedule);
             }else{
