@@ -128,7 +128,7 @@ public class TripEventService {
             }else{
                 newTripEvent.setScheduledArrivalTime("SKIP");
             }
-            log.info("Completed Processing Trip:"+newTripEvent.getTripEventId());
+            log.info("Completed Processing Trip Event:"+newTripEvent.getTripEventId());
             trip.getScheduledEvents().addLast(newTripEvent);
         }
     }
@@ -151,7 +151,7 @@ public class TripEventService {
         Calendar nearestSchedule = null;
         for(Calendar currSchedule:schedulesMap.keySet()) {
             Long estimatedTimeBetween = ChronoUnit.MINUTES.between(lastEventTime.toInstant(), currSchedule.toInstant());
-            if (estimatedTimeBetween >= 1 && estimatedTimeBetween <= 10) {
+            if (estimatedTimeBetween >= 1 && estimatedTimeBetween <= 30) {
                 if (Objects.isNull(nearestSchedule)) {
                     nearestSchedule = currSchedule;
                 } else {
