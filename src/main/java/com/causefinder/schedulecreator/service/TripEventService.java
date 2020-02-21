@@ -101,7 +101,10 @@ public class TripEventService {
         //log.info("Processing Trip:"+trip.getTripId());
         if (Objects.nonNull(stopInfo.getSchedules().get(weekDay)) && !stopInfo.getSchedules().get(weekDay).isEmpty()) {
             TripEvent newTripEvent = new TripEvent();
-            String matchingSchedule = getMatchingSchedule(trip.getScheduledEvents().getLast(), stopInfo.getSchedules().get(weekDay));
+
+            TripEvent lastValidTripEvent=getLastValidTrip(trip, trip.getScheduledEvents().getLast());
+            String matchingSchedule = getMatchingSchedule(lastValidTripEvent, stopInfo.getSchedules().get(weekDay));
+
             modelMapper.map(trip.getScheduledEvents().getLast(), newTripEvent);
 
             newTripEvent.setTripEventSequenceId(trip.getScheduledEvents().size() + 1);
@@ -128,6 +131,14 @@ public class TripEventService {
             log.info("Completed Processing Trip:"+newTripEvent.getTripEventId());
             trip.getScheduledEvents().addLast(newTripEvent);
         }
+    }
+
+    private TripEvent getLastValidTrip(Trip trip, TripEvent lastTripEvent) {
+        int reverseIndexPos=2;
+        while("SKIP".equalsIgnoreCase(lastTripEvent.getScheduledArrivalTime())){
+            lastTripEvent=trip.getScheduledEvents().get(trip.getScheduledEvents().size()-reverseIndexPos++);
+        }
+        return lastTripEvent;
     }
 
     private String getMatchingSchedule(TripEvent lastTripEvent, PriorityQueue<String> schedules) {
