@@ -49,7 +49,7 @@ public class ScheduleCreatorController {
     }
 
     @RequestMapping(value = "/dailytrips", method = RequestMethod.GET)
-    public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> dailyTripEvents(@RequestParam String route,@RequestParam int dayOfWeek) {
-        return tripEventService.getDailyTripEvents(route,DayOfWeek.of(dayOfWeek));
+    public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> dailyTripEvents(@RequestParam String route, @RequestParam int dayOfWeek) {
+        return tripEventService.getDailyTripEvents(route, DayOfWeek.of(dayOfWeek));
     }
 }

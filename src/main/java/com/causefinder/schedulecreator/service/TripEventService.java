@@ -46,7 +46,7 @@ public class TripEventService {
         return tripSchedules;
     }
 
-    public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> getDailyTripEvents(String routeId,DayOfWeek dayOfWeek) {
+    public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> getDailyTripEvents(String routeId, DayOfWeek dayOfWeek) {
         Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> tripSchedules = new HashMap<>();
         try {
             RouteResponse routeResponse = scrapperClient.getDefaultRouteInformation("bac", routeId);
@@ -88,7 +88,7 @@ public class TripEventService {
                     tripsOfThisRouteType = createTripsFromFirstStop(weekDay, routeResponse, routeType, ++routeTypeId, stop);
                     firstStop = false;
                 } else {
-                   tripsOfThisRouteType.parallelStream().forEach(trip -> addMatchingTripEventsForThisStop(weekDay, trip, stop));
+                    tripsOfThisRouteType.parallelStream().forEach(trip -> addMatchingTripEventsForThisStop(weekDay, trip, stop));
                 }
             }
             if (!tripsOfThisRouteType.isEmpty())
@@ -102,8 +102,8 @@ public class TripEventService {
         if (Objects.nonNull(stopInfo.getSchedules().get(weekDay)) && !stopInfo.getSchedules().get(weekDay).isEmpty()) {
             TripEvent newTripEvent = new TripEvent();
 
-            TripEvent lastValidTripEvent=getLastValidTrip(trip, trip.getScheduledEvents().getLast());
-            String matchingSchedule = getMatchingSchedule(lastValidTripEvent, stopInfo.getSchedules().get(weekDay));
+            TripEvent lastValidTripEvent = getLastValidTrip(trip, trip.getScheduledEvents().getLast());
+            String matchingSchedule = getMatchingScheduleV2(lastValidTripEvent, stopInfo.getSchedules().get(weekDay));
 
             modelMapper.map(trip.getScheduledEvents().getLast(), newTripEvent);
 
@@ -123,33 +123,57 @@ public class TripEventService {
             newTripEvent.setPreviousBusStopId(trip.getScheduledEvents().getLast().getBusStopId());
             newTripEvent.setPreviousBusStopName(trip.getScheduledEvents().getLast().getBusStopName());
 
-            if(Objects.nonNull(matchingSchedule)){
+            if (Objects.nonNull(matchingSchedule)) {
                 newTripEvent.setScheduledArrivalTime(matchingSchedule);
-            }else{
+            } else {
                 newTripEvent.setScheduledArrivalTime("SKIP");
             }
-            log.info("Completed Processing Trip Event:"+newTripEvent.getTripEventId());
+            log.info("Completed Processing Trip Event:" + newTripEvent.getTripEventId());
             trip.getScheduledEvents().addLast(newTripEvent);
         }
     }
 
     private TripEvent getLastValidTrip(Trip trip, TripEvent lastTripEvent) {
-        int reverseIndexPos=2;
-        while("SKIP".equalsIgnoreCase(lastTripEvent.getScheduledArrivalTime())){
-            lastTripEvent=trip.getScheduledEvents().get(trip.getScheduledEvents().size()-reverseIndexPos++);
+        int reverseIndexPos = 2;
+        while ("SKIP".equalsIgnoreCase(lastTripEvent.getScheduledArrivalTime())) {
+            lastTripEvent = trip.getScheduledEvents().get(trip.getScheduledEvents().size() - reverseIndexPos++);
         }
         return lastTripEvent;
     }
 
+    private String getMatchingScheduleV2(TripEvent lastTripEvent, PriorityQueue<String> schedules) {
+        String mostMatchedSchedule = null;
+        int latestTripInMin = convertToMinFromMidnight(lastTripEvent.getScheduledArrivalTime());
+        for (String currSchedule : schedules) {
+            int estimatedTimeBetween = convertToMinFromMidnight(currSchedule) - latestTripInMin;
+            if (estimatedTimeBetween >= 1 && estimatedTimeBetween <= 30) {
+                if (Objects.isNull(mostMatchedSchedule)) {
+                    mostMatchedSchedule = currSchedule;
+                } else {
+                    if (convertToMinFromMidnight(mostMatchedSchedule) - convertToMinFromMidnight(currSchedule) > 0) {
+                        mostMatchedSchedule = currSchedule;
+                    }
+                }
+            }
+        }
+        return mostMatchedSchedule;
+    }
+
+    private int convertToMinFromMidnight(String timeIn24HrFormat) {
+        int minFromMidNight = 60 * Integer.parseInt(timeIn24HrFormat.trim().split(":")[0]);
+        minFromMidNight += Integer.parseInt(timeIn24HrFormat.trim().split(":")[1]);
+        return minFromMidNight;
+    }
+
     private String getMatchingSchedule(TripEvent lastTripEvent, PriorityQueue<String> schedules) {
         String mostMatchedSchedule = null;
-        Calendar lastEventTime = convertScheduleToCalender(lastTripEvent.getTripScheduledStartTime());
-        Map<Calendar, String> schedulesMap =new HashMap<>();
-        for(String schedule:schedules){
-            schedulesMap.put(convertScheduleToCalender(schedule),schedule);
+        Calendar lastEventTime = convertScheduleToCalender(lastTripEvent.getScheduledArrivalTime());
+        Map<Calendar, String> schedulesMap = new HashMap<>();
+        for (String schedule : schedules) {
+            schedulesMap.put(convertScheduleToCalender(schedule), schedule);
         }
         Calendar nearestSchedule = null;
-        for(Calendar currSchedule:schedulesMap.keySet()) {
+        for (Calendar currSchedule : schedulesMap.keySet()) {
             Long estimatedTimeBetween = ChronoUnit.MINUTES.between(lastEventTime.toInstant(), currSchedule.toInstant());
             if (estimatedTimeBetween >= 1 && estimatedTimeBetween <= 30) {
                 if (Objects.isNull(nearestSchedule)) {
