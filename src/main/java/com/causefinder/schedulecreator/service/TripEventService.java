@@ -5,7 +5,9 @@ import com.causefinder.schedulecreator.exception.NoRouteResponse;
 import com.causefinder.schedulecreator.exception.NoTimeTableResponse;
 import com.causefinder.schedulecreator.external.model.*;
 import com.causefinder.schedulecreator.model.Trip;
+import com.causefinder.schedulecreator.model.TripDebug;
 import com.causefinder.schedulecreator.model.TripEvent;
+import com.causefinder.schedulecreator.util.TripConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +29,8 @@ public class TripEventService {
     @Autowired
     private BusDataScrapperClient scrapperClient;
     private ModelMapper modelMapper = new ModelMapper();
+    @Autowired
+    private TripConverter tripConverter;
 
     public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> getWeeklyTripEvents(String routeId) {
         Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> tripSchedules = new HashMap<>();
@@ -53,6 +57,22 @@ public class TripEventService {
             if (Objects.nonNull(routeResponse) && routeResponse.getNumberofresults() > 0) {
                 routeResponse.getResults().forEach(routeType -> findRouteSchedules(routeId, routeType));
                 tripSchedules.put(dayOfWeek, createDailyTripSchedulesForRouteTypes(dayOfWeek, routeResponse));
+            } else {
+                throw new NoRouteResponse("No Route Information received from server. RouteId:" + routeId);
+            }
+        } catch (Exception e) {
+            log.error("Error in getWeeklyTripEvents()", e);
+        }
+        return tripSchedules;
+    }
+
+    public Map<DayOfWeek, Map<String, List<TripDebug>>> getDailyTripEventsDebug(String routeId, DayOfWeek dayOfWeek) {
+        Map<DayOfWeek, Map<String, List<TripDebug>>> tripSchedules = new HashMap<>();
+        try {
+            RouteResponse routeResponse = scrapperClient.getDefaultRouteInformation("bac", routeId);
+            if (Objects.nonNull(routeResponse) && routeResponse.getNumberofresults() > 0) {
+                routeResponse.getResults().forEach(routeType -> findRouteSchedules(routeId, routeType));
+                tripSchedules.put(dayOfWeek, createDailyTripSchedulesForRouteTypesDebug(dayOfWeek, routeResponse));
             } else {
                 throw new NoRouteResponse("No Route Information received from server. RouteId:" + routeId);
             }
@@ -93,6 +113,26 @@ public class TripEventService {
             }
             if (!tripsOfThisRouteType.isEmpty())
                 routeTypeTripMap.put(tripsOfThisRouteType.peek().getRouteTypeId(), tripsOfThisRouteType);
+        }
+        return routeTypeTripMap;
+    }
+
+    private Map<String, List<TripDebug>> createDailyTripSchedulesForRouteTypesDebug(DayOfWeek weekDay, RouteResponse routeResponse) {
+        int routeTypeId = 0;
+        Map<String, List<TripDebug>> routeTypeTripMap = new HashMap<>();
+        for (RouteType routeType : routeResponse.getResults()) {
+            PriorityQueue<Trip> tripsOfThisRouteType = new PriorityQueue<>();
+            boolean firstStop = true;
+            for (StopInfo stop : routeType.getStops()) {
+                if (firstStop) {
+                    tripsOfThisRouteType = createTripsFromFirstStop(weekDay, routeResponse, routeType, ++routeTypeId, stop);
+                    firstStop = false;
+                } else {
+                    tripsOfThisRouteType.parallelStream().forEach(trip -> addMatchingTripEventsForThisStop(weekDay, trip, stop));
+                }
+            }
+            if (!tripsOfThisRouteType.isEmpty())
+                routeTypeTripMap.put(tripsOfThisRouteType.peek().getRouteTypeId(), tripsOfThisRouteType.stream().map(tripConverter::convertToDebug).collect(Collectors.toList()));
         }
         return routeTypeTripMap;
     }

@@ -5,6 +5,7 @@ import com.causefinder.schedulecreator.client.BusDataScrapperSoapClient;
 import com.causefinder.schedulecreator.external.model.RouteResponse;
 import com.causefinder.schedulecreator.external.model.TimeTableResponse;
 import com.causefinder.schedulecreator.model.Trip;
+import com.causefinder.schedulecreator.model.TripDebug;
 import com.causefinder.schedulecreator.service.TripEventService;
 import com.google.cloud.bigquery.BigQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.DayOfWeek;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 
@@ -51,5 +53,10 @@ public class ScheduleCreatorController {
     @RequestMapping(value = "/dailytrips", method = RequestMethod.GET)
     public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> dailyTripEvents(@RequestParam String route, @RequestParam int dayOfWeek) {
         return tripEventService.getDailyTripEvents(route, DayOfWeek.of(dayOfWeek));
+    }
+
+    @RequestMapping(value = "/lite/dailytrips", method = RequestMethod.GET)
+    public Map<DayOfWeek, Map<String, List<TripDebug>>> dailyTripEventsLite(@RequestParam String route, @RequestParam int dayOfWeek) {
+        return tripEventService.getDailyTripEventsDebug(route, DayOfWeek.of(dayOfWeek));
     }
 }
