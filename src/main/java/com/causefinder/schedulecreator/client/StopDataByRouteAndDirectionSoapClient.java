@@ -1,6 +1,6 @@
 package com.causefinder.schedulecreator.client;
 
-import com.causefinder.schedulecreator.soap.model.StopData;
+import com.causefinder.schedulecreator.soap.model.Stops;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -13,26 +13,26 @@ import java.util.List;
 
 @Slf4j
 @Component
-public class RealTimeDataSoapClient {
+public class StopDataByRouteAndDirectionSoapClient {
 
     private static XmlMapper xmlMapper = new XmlMapper();
 
     public static void main(String args[]) {
-        RealTimeDataSoapClient realTimeDataSoapClient = new RealTimeDataSoapClient();
-        realTimeDataSoapClient.getRealTimeData("44");
+        StopDataByRouteAndDirectionSoapClient realTimeDataSoapClient = new StopDataByRouteAndDirectionSoapClient();
+        realTimeDataSoapClient.getStopDataByRouteAndDirection("44", "I");
     }
 
-    public List<StopData> getRealTimeData(String busStopId) {
+    public List<Stops> getStopDataByRouteAndDirection(String route, String direction) {
         try {
             String soapEndpointUrl = "http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx";
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
             SOAPConnection soapConnection = soapConnectionFactory.createConnection();
-            SOAPMessage soapResponse = soapConnection.call(getRealTimeStopDataRequest(busStopId), soapEndpointUrl);
+            SOAPMessage soapResponse = soapConnection.call(getStopDataByRouteAndDirectionRequest(route, direction), soapEndpointUrl);
 
-            // Print the SOAP Response
-            // System.out.println("Response SOAP Message:");
-            // soapResponse.writeTo(System.out);
-            // System.out.println();
+            //Print the SOAP Response
+            //System.out.println("Response SOAP Message:");
+            //soapResponse.writeTo(System.out);
+            //System.out.println();
             OutputStream output = new OutputStream() {
                 private StringBuilder string = new StringBuilder();
 
@@ -49,22 +49,22 @@ public class RealTimeDataSoapClient {
             soapConnection.close();
             String response = output.toString();
 
-            String cleanedResponse = response.substring(3397, response.length() - 122);
-            System.out.println(cleanedResponse);
+            String cleanedResponse = response.substring(1483, response.length() - 144);
+           // System.out.println(cleanedResponse);
 
             StringBuilder cleanData = new StringBuilder(cleanedResponse);
             int locStart = 0;
-            StopData stopData = null;
-            List<StopData> stopDataList = new ArrayList<>();
+            Stops stopData = null;
+            List<Stops> stopDataList = new ArrayList<>();
             while (true) {
-                locStart = cleanData.indexOf("<StopData diffgr");
+                locStart = cleanData.indexOf("<Stops diffgr");
                 if (locStart == -1) break;
                 int locStop = cleanData.indexOf("\">");
-                cleanData.replace(locStart, locStop + 2, "<StopData>");
-                locStart = cleanData.indexOf("<StopData>");
-                locStop = cleanData.indexOf("</StopData>");
-                String element = cleanData.substring(locStart, locStop + 11);
-                stopData = xmlMapper.readValue(element, StopData.class);
+                cleanData.replace(locStart, locStop + 2, "<Stops>");
+                locStart = cleanData.indexOf("<Stops>");
+                locStop = cleanData.indexOf("</Stops>");
+                String element = cleanData.substring(locStart, locStop + 8);
+                stopData = xmlMapper.readValue(element, Stops.class);
                 stopDataList.add(stopData);
             }
             return stopDataList;
@@ -76,7 +76,7 @@ public class RealTimeDataSoapClient {
     }
 
 
-    private SOAPMessage getRealTimeStopDataRequest(String busStopId) throws Exception {
+    private SOAPMessage getStopDataByRouteAndDirectionRequest(String route, String direction) throws Exception {
         MessageFactory messageFactory = MessageFactory.newInstance();
         SOAPMessage soapMessage = messageFactory.createMessage();
 
@@ -88,12 +88,12 @@ public class RealTimeDataSoapClient {
         envelope.addNamespaceDeclaration(dublinBusNamespace, dublinBusNsUrl);
         SOAPBody soapBody = envelope.getBody();
 
-        String soapAction = "http://dublinbus.ie/GetRealTimeStopData";
-        SOAPElement getRealTimeStopData = soapBody.addChildElement("GetRealTimeStopData", dublinBusNamespace);
-        SOAPElement stopId = getRealTimeStopData.addChildElement("stopId", dublinBusNamespace);
-        stopId.addTextNode(busStopId);
-        SOAPElement forceRefresh = getRealTimeStopData.addChildElement("forceRefresh", dublinBusNamespace);
-        forceRefresh.addTextNode("true");
+        String soapAction = "http://dublinbus.ie/GetStopDataByRouteAndDirection";
+        SOAPElement getRealTimeStopData = soapBody.addChildElement("GetStopDataByRouteAndDirection", dublinBusNamespace);
+        SOAPElement stopId = getRealTimeStopData.addChildElement("route", dublinBusNamespace);
+        stopId.addTextNode(route);
+        SOAPElement forceRefresh = getRealTimeStopData.addChildElement("direction", dublinBusNamespace);
+        forceRefresh.addTextNode(direction);
         MimeHeaders headers = soapMessage.getMimeHeaders();
         headers.addHeader("SOAPAction", soapAction);
         soapMessage.saveChanges();

@@ -1,15 +1,15 @@
 package com.causefinder.schedulecreator.controller;
 
 import com.causefinder.schedulecreator.client.BusDataScrapperClient;
-import com.causefinder.schedulecreator.client.BusDataScrapperSoapClient;
 import com.causefinder.schedulecreator.client.RealTimeDataSoapClient;
+import com.causefinder.schedulecreator.client.StopDataByRouteAndDirectionSoapClient;
 import com.causefinder.schedulecreator.external.model.RouteResponse;
 import com.causefinder.schedulecreator.external.model.TimeTableResponse;
 import com.causefinder.schedulecreator.model.Trip;
 import com.causefinder.schedulecreator.model.TripDebug;
-import com.causefinder.schedulecreator.rtpi.wsdl.GetRealTimeStopDataResponse;
 import com.causefinder.schedulecreator.service.TripEventService;
 import com.causefinder.schedulecreator.soap.model.StopData;
+import com.causefinder.schedulecreator.soap.model.Stops;
 import com.google.cloud.bigquery.BigQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +33,9 @@ public class ScheduleCreatorController {
     RealTimeDataSoapClient realTimeDataSoapClient;
 
     @Autowired
+    StopDataByRouteAndDirectionSoapClient stopDataByRouteAndDirectionSoapClient;
+
+    @Autowired
     BusDataScrapperClient restClient;
 
     @Autowired
@@ -41,6 +44,11 @@ public class ScheduleCreatorController {
     @RequestMapping(value = "/soap/realtime", method = RequestMethod.GET)
     public List<StopData> viewRealTimeData(@RequestParam String busStopId) {
         return realTimeDataSoapClient.getRealTimeData(busStopId);
+    }
+
+    @RequestMapping(value = "/soap/route", method = RequestMethod.GET)
+    public List<Stops> viewStopDataByRouteAndDirection(@RequestParam String route, @RequestParam String direction) {
+        return stopDataByRouteAndDirectionSoapClient.getStopDataByRouteAndDirection(route,direction);
     }
 
     @RequestMapping(value = "/raw/route", method = RequestMethod.GET)
