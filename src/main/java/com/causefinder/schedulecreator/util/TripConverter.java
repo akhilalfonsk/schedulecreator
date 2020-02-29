@@ -12,9 +12,9 @@ public class TripConverter {
 
     private ModelMapper modelMapper = new ModelMapper();
 
-    public TripDebug convertToDebug(Trip trip){
-        TripDebug tripDebug=modelMapper.map(trip,TripDebug.class);
-        tripDebug.setSchedules(trip.getScheduledEvents().stream().map(tripEvent -> tripEvent.getBusStopId()+"->"+tripEvent.getScheduledArrivalTime()).collect(Collectors.toList()));
+    public TripDebug convertToDebug(Trip trip) {
+        TripDebug tripDebug = modelMapper.map(trip, TripDebug.class);
+        tripDebug.setSchedules(trip.getScheduledEvents().stream().map(tripEvent -> tripEvent.getBusStopId() + "->" + tripEvent.getScheduledArrivalTime()).collect(Collectors.toList()));
         return tripDebug;
     }
 }
