@@ -41,22 +41,22 @@ public class ScheduleCreatorController {
     @Autowired
     TripEventService tripEventService;
 
-    @RequestMapping(value = "/soap/realtime", method = RequestMethod.GET)
+    @RequestMapping(value = "/raw/soap/realtime", method = RequestMethod.GET)
     public List<StopData> viewRealTimeData(@RequestParam String busStopId) {
         return realTimeDataSoapClient.getRealTimeData(busStopId);
     }
 
-    @RequestMapping(value = "/soap/route", method = RequestMethod.GET)
+    @RequestMapping(value = "/raw/soap/route", method = RequestMethod.GET)
     public List<Stops> viewStopDataByRouteAndDirection(@RequestParam String route, @RequestParam String direction) {
         return stopDataByRouteAndDirectionSoapClient.getStopDataByRouteAndDirection(route,direction);
     }
 
-    @RequestMapping(value = "/raw/route", method = RequestMethod.GET)
+    @RequestMapping(value = "/raw/rest/route", method = RequestMethod.GET)
     public RouteResponse viewRawRouteData(@RequestParam String operator, @RequestParam String route) {
         return tripEventService.getRoutesWithSchedules(operator, route);
     }
 
-    @RequestMapping(value = "/raw/weeklytimetable", method = RequestMethod.GET)
+    @RequestMapping(value = "/raw/rest/weeklytimetable", method = RequestMethod.GET)
     public TimeTableResponse viewRawWeeklyBusStopTimeTable(@RequestParam String route, @RequestParam String stopId) {
         return restClient.getWeeklyTimeTableInformation(route, stopId);
     }
@@ -66,12 +66,12 @@ public class ScheduleCreatorController {
         return tripEventService.getWeeklyTripEvents(route);
     }
 
-    @RequestMapping(value = "/dailytrips", method = RequestMethod.GET)
+    @RequestMapping(value = "/processed/dailytrips", method = RequestMethod.GET)
     public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> dailyTripEvents(@RequestParam String route, @RequestParam int dayOfWeek) {
         return tripEventService.getDailyTripEvents(route, DayOfWeek.of(dayOfWeek));
     }
 
-    @RequestMapping(value = "/lite/dailytrips", method = RequestMethod.GET)
+    @RequestMapping(value = "/processed/lite/dailytrips", method = RequestMethod.GET)
     public Map<DayOfWeek, Map<String, List<TripDebug>>> dailyTripEventsLite(@RequestParam String route, @RequestParam int dayOfWeek) {
         return tripEventService.getDailyTripEventsDebug(route, DayOfWeek.of(dayOfWeek));
     }
