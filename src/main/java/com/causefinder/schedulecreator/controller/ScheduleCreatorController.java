@@ -48,7 +48,7 @@ public class ScheduleCreatorController {
 
     @RequestMapping(value = "/raw/soap/route", method = RequestMethod.GET)
     public List<Stops> viewStopDataByRouteAndDirection(@RequestParam String route, @RequestParam String direction) {
-        return stopDataByRouteAndDirectionSoapClient.getStopDataByRouteAndDirection(route,direction);
+        return stopDataByRouteAndDirectionSoapClient.getStopDataByRouteAndDirection(route, direction);
     }
 
     @RequestMapping(value = "/raw/rest/route", method = RequestMethod.GET)

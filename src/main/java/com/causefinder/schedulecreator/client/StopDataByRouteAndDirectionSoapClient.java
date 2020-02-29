@@ -50,7 +50,7 @@ public class StopDataByRouteAndDirectionSoapClient {
             String response = output.toString();
 
             String cleanedResponse = response.substring(1483, response.length() - 144);
-           // System.out.println(cleanedResponse);
+            // System.out.println(cleanedResponse);
 
             StringBuilder cleanData = new StringBuilder(cleanedResponse);
             int locStart = 0;
