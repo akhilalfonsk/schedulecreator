@@ -12,7 +12,7 @@
     <artifactId>schedulecreator</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>schedulecreator</name>
-    <description>Demo project for Spring Boot</description>
+    <description>Schedule Creator</description>
 
     <properties>
         <java.version>1.8</java.version>
