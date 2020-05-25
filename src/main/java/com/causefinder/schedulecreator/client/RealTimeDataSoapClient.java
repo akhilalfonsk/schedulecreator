@@ -4,7 +4,6 @@ import com.causefinder.schedulecreator.soap.model.StopData;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -18,18 +17,19 @@ import java.util.List;
 @Component
 public class RealTimeDataSoapClient {
 
-    private XmlMapper xmlMapper= new XmlMapper();;
+    private XmlMapper xmlMapper = new XmlMapper();
+    ;
 
     public static void main(String args[]) {
         RealTimeDataSoapClient realTimeDataSoapClient = new RealTimeDataSoapClient();
-        realTimeDataSoapClient.xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+        realTimeDataSoapClient.xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         realTimeDataSoapClient.getRealTimeData("4096");
     }
 
-    @Cacheable(cacheNames = "RealTimeStopDataCache",key = "T(java.util.Objects).hash(#p0)", cacheManager = "realTimeStopDataCacheManager")
+    @Cacheable(cacheNames = "RealTimeStopDataCache", key = "T(java.util.Objects).hash(#p0)", cacheManager = "realTimeStopDataCacheManager")
     public List<StopData> getRealTimeData(String busStopId) {
         try {
-            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             String soapEndpointUrl = "http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx";
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
             SOAPConnection soapConnection = soapConnectionFactory.createConnection();
@@ -54,7 +54,7 @@ public class RealTimeDataSoapClient {
             soapResponse.writeTo(output);
             soapConnection.close();
             String response = output.toString();
-            if(response.length()<3519){
+            if (response.length() < 3519) {
                 return new ArrayList<>();
             }
             String cleanedResponse = response.substring(3397, response.length() - 122);
@@ -72,7 +72,7 @@ public class RealTimeDataSoapClient {
                 locStart = cleanData.indexOf("<StopData>");
                 locStop = cleanData.indexOf("</StopData>");
                 String element = cleanData.substring(locStart, locStop + 11);
-                cleanData.replace(locStart, locStop + 11,"");
+                cleanData.replace(locStart, locStop + 11, "");
                 stopData = xmlMapper.readValue(element, StopData.class);
                 stopDataList.add(stopData);
             }

@@ -4,8 +4,6 @@ import com.causefinder.schedulecreator.soap.model.Stops;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -20,18 +18,18 @@ import java.util.List;
 @Component
 public class StopDataByRouteAndDirectionSoapClient {
 
-    private XmlMapper xmlMapper= new XmlMapper();
+    private XmlMapper xmlMapper = new XmlMapper();
 
     public static void main(String args[]) {
         StopDataByRouteAndDirectionSoapClient realTimeDataSoapClient = new StopDataByRouteAndDirectionSoapClient();
-        realTimeDataSoapClient.xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+        realTimeDataSoapClient.xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         realTimeDataSoapClient.getStopDataByRouteAndDirection("44", "I");
     }
 
-    @Cacheable(cacheNames = "RouteDataCache",key = "T(java.util.Objects).hash(#p0,#p1)")
+    @Cacheable(cacheNames = "RouteDataCache", key = "T(java.util.Objects).hash(#p0,#p1)")
     public List<Stops> getStopDataByRouteAndDirection(String route, String direction) {
         try {
-            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
+            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             String soapEndpointUrl = "http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx";
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
             SOAPConnection soapConnection = soapConnectionFactory.createConnection();
@@ -72,11 +70,11 @@ public class StopDataByRouteAndDirectionSoapClient {
                 locStart = cleanData.indexOf("<Stops>");
                 locStop = cleanData.indexOf("</Stops>");
                 String element = cleanData.substring(locStart, locStop + 8);
-                cleanData.replace(locStart, locStop + 8,"");
+                cleanData.replace(locStart, locStop + 8, "");
                 stopData = xmlMapper.readValue(element, Stops.class);
                 stopDataList.add(stopData);
             }
-           Collections.sort(stopDataList);
+            Collections.sort(stopDataList);
             return stopDataList;
         } catch (Exception e) {
             System.err.println("\nError occurred while sending SOAP Request to Server!\nMake sure you have the correct endpoint URL and SOAPAction!\n");

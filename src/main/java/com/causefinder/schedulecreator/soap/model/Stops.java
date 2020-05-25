@@ -26,8 +26,8 @@ public class Stops implements Comparable<Stops> {
 
     @Override
     public int compareTo(Stops o) {
-       if(!getRoute().equalsIgnoreCase(o.getRoute())) return getRoute().compareTo(o.getRoute());
-       else if(!getSeqNumber().equals(o.getSeqNumber())) return  getSeqNumber().compareTo(o.getSeqNumber());
-       else return getSeqNumberExt().compareTo(getSeqNumberExt());
+        if (!getRoute().equalsIgnoreCase(o.getRoute())) return getRoute().compareTo(o.getRoute());
+        else if (!getSeqNumber().equals(o.getSeqNumber())) return getSeqNumber().compareTo(o.getSeqNumber());
+        else return getSeqNumberExt().compareTo(getSeqNumberExt());
     }
 }
