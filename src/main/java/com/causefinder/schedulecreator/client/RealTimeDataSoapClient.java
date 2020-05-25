@@ -4,7 +4,8 @@ import com.causefinder.schedulecreator.soap.model.StopData;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import javax.xml.soap.*;
@@ -25,6 +26,7 @@ public class RealTimeDataSoapClient {
         realTimeDataSoapClient.getRealTimeData("4096");
     }
 
+    @Cacheable(cacheNames = "RealTimeStopDataCache",key = "T(java.util.Objects).hash(#p0)", cacheManager = "realTimeStopDataCacheManager")
     public List<StopData> getRealTimeData(String busStopId) {
         try {
             xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
@@ -34,7 +36,7 @@ public class RealTimeDataSoapClient {
             SOAPMessage soapResponse = soapConnection.call(getRealTimeStopDataRequest(busStopId), soapEndpointUrl);
 
             // Print the SOAP Response
-            // System.out.println("Response SOAP Message:");
+            System.out.println(">>RTPI SOAP REQ SEND");
             // soapResponse.writeTo(System.out);
             // System.out.println();
             OutputStream output = new OutputStream() {

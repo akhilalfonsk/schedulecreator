@@ -27,19 +27,11 @@ import java.util.PriorityQueue;
 public class ScheduleCreatorController {
 
     @Autowired
-    BigQuery config;
-
-    @Autowired
     RealTimeDataSoapClient realTimeDataSoapClient;
 
     @Autowired
     StopDataByRouteAndDirectionSoapClient stopDataByRouteAndDirectionSoapClient;
 
-    @Autowired
-    BusDataScrapperClient restClient;
-
-    @Autowired
-    TripEventService tripEventService;
 
     @RequestMapping(value = "/raw/soap/realtime", method = RequestMethod.GET)
     public List<StopData> viewRealTimeData(@RequestParam String busStopId) {
@@ -51,28 +43,4 @@ public class ScheduleCreatorController {
         return stopDataByRouteAndDirectionSoapClient.getStopDataByRouteAndDirection(route, direction);
     }
 
-    @RequestMapping(value = "/raw/rest/route", method = RequestMethod.GET)
-    public RouteResponse viewRawRouteData(@RequestParam String operator, @RequestParam String route) {
-        return tripEventService.getRoutesWithSchedules(operator, route);
-    }
-
-    @RequestMapping(value = "/raw/rest/weeklytimetable", method = RequestMethod.GET)
-    public TimeTableResponse viewRawWeeklyBusStopTimeTable(@RequestParam String route, @RequestParam String stopId) {
-        return restClient.getWeeklyTimeTableInformation(route, stopId);
-    }
-
-    @RequestMapping(value = "/weeklytrips", method = RequestMethod.GET)
-    public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> weeklyTripEvents(@RequestParam String route) {
-        return tripEventService.getWeeklyTripEvents(route);
-    }
-
-    @RequestMapping(value = "/processed/dailytrips", method = RequestMethod.GET)
-    public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> dailyTripEvents(@RequestParam String route, @RequestParam int dayOfWeek) {
-        return tripEventService.getDailyTripEvents(route, DayOfWeek.of(dayOfWeek));
-    }
-
-    @RequestMapping(value = "/processed/lite/dailytrips", method = RequestMethod.GET)
-    public Map<DayOfWeek, Map<String, List<TripDebug>>> dailyTripEventsLite(@RequestParam String route, @RequestParam int dayOfWeek) {
-        return tripEventService.getDailyTripEventsDebug(route, DayOfWeek.of(dayOfWeek));
-    }
 }

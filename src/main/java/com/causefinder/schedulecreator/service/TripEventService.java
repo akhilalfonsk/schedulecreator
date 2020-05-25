@@ -23,14 +23,14 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class TripEventService {
-
     private static SimpleDateFormat tripPatternFormatter = new SimpleDateFormat("yy-ww-uu");
 
     @Autowired
     private BusDataScrapperClient scrapperClient;
-    private ModelMapper modelMapper = new ModelMapper();
     @Autowired
     private TripConverter tripConverter;
+
+    private ModelMapper modelMapper = new ModelMapper();
 
     public Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> getWeeklyTripEvents(String routeId) {
         Map<DayOfWeek, Map<String, PriorityQueue<Trip>>> tripSchedules = new HashMap<>();

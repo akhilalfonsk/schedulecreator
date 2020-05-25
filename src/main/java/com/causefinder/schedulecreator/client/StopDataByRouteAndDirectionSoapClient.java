@@ -18,10 +18,9 @@ import java.util.List;
 
 @Slf4j
 @Component
-@CacheConfig(cacheNames = {"RouteDateCache"})
 public class StopDataByRouteAndDirectionSoapClient {
 
-    private XmlMapper xmlMapper= new XmlMapper();;
+    private XmlMapper xmlMapper= new XmlMapper();
 
     public static void main(String args[]) {
         StopDataByRouteAndDirectionSoapClient realTimeDataSoapClient = new StopDataByRouteAndDirectionSoapClient();
@@ -29,7 +28,7 @@ public class StopDataByRouteAndDirectionSoapClient {
         realTimeDataSoapClient.getStopDataByRouteAndDirection("44", "I");
     }
 
-    @Cacheable(value = "RouteDateCache",key = "T(java.util.Objects).hash(#p0,#p1)")
+    @Cacheable(cacheNames = "RouteDataCache",key = "T(java.util.Objects).hash(#p0,#p1)")
     public List<Stops> getStopDataByRouteAndDirection(String route, String direction) {
         try {
             xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
@@ -39,7 +38,7 @@ public class StopDataByRouteAndDirectionSoapClient {
             SOAPMessage soapResponse = soapConnection.call(getStopDataByRouteAndDirectionRequest(route, direction), soapEndpointUrl);
 
             //Print the SOAP Response
-            //System.out.println("Calling SOAP StopDataByRouteAndDirection API");
+            System.out.println("Calling SOAP StopDataByRouteAndDirection API");
             //soapResponse.writeTo(System.out);
             //System.out.println();
             OutputStream output = new OutputStream() {
