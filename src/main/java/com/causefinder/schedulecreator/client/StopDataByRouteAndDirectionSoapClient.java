@@ -3,16 +3,20 @@ package com.causefinder.schedulecreator.client;
 import com.causefinder.schedulecreator.soap.model.Stops;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import javax.xml.soap.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 @Component
+@CacheConfig(cacheNames = {"RouteDateCache"})
 public class StopDataByRouteAndDirectionSoapClient {
 
     private static XmlMapper xmlMapper = new XmlMapper();
@@ -22,6 +26,7 @@ public class StopDataByRouteAndDirectionSoapClient {
         realTimeDataSoapClient.getStopDataByRouteAndDirection("44", "I");
     }
 
+    @Cacheable(value = "RouteDateCache",key = "T(java.util.Objects).hash(#p0,#p1)")
     public List<Stops> getStopDataByRouteAndDirection(String route, String direction) {
         try {
             String soapEndpointUrl = "http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx";
@@ -30,7 +35,7 @@ public class StopDataByRouteAndDirectionSoapClient {
             SOAPMessage soapResponse = soapConnection.call(getStopDataByRouteAndDirectionRequest(route, direction), soapEndpointUrl);
 
             //Print the SOAP Response
-            //System.out.println("Response SOAP Message:");
+            //System.out.println("Calling SOAP StopDataByRouteAndDirection API");
             //soapResponse.writeTo(System.out);
             //System.out.println();
             OutputStream output = new OutputStream() {
@@ -59,14 +64,16 @@ public class StopDataByRouteAndDirectionSoapClient {
             while (true) {
                 locStart = cleanData.indexOf("<Stops diffgr");
                 if (locStart == -1) break;
-                int locStop = cleanData.indexOf("\">");
-                cleanData.replace(locStart, locStop + 2, "<Stops>");
+                int locStop = cleanData.indexOf(">");
+                cleanData.replace(locStart, locStop + 1, "<Stops>");
                 locStart = cleanData.indexOf("<Stops>");
                 locStop = cleanData.indexOf("</Stops>");
                 String element = cleanData.substring(locStart, locStop + 8);
+                cleanData.replace(locStart, locStop + 8,"");
                 stopData = xmlMapper.readValue(element, Stops.class);
                 stopDataList.add(stopData);
             }
+           Collections.sort(stopDataList);
             return stopDataList;
         } catch (Exception e) {
             System.err.println("\nError occurred while sending SOAP Request to Server!\nMake sure you have the correct endpoint URL and SOAPAction!\n");

@@ -1,4 +1,4 @@
-package com.causefinder.schedulecreator.external.model;
+package com.causefinder.schedulecreator.rest.model;
 
 import java.sql.Timestamp;
 

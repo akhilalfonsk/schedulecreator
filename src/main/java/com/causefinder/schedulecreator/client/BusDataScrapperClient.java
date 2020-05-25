@@ -1,8 +1,8 @@
 package com.causefinder.schedulecreator.client;
 
-import com.causefinder.schedulecreator.external.model.RealtimeBusInformationResponse;
-import com.causefinder.schedulecreator.external.model.RouteResponse;
-import com.causefinder.schedulecreator.external.model.TimeTableResponse;
+import com.causefinder.schedulecreator.rest.model.RealtimeBusInformationResponse;
+import com.causefinder.schedulecreator.rest.model.RouteResponse;
+import com.causefinder.schedulecreator.rest.model.TimeTableResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;

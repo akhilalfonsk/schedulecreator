@@ -19,7 +19,7 @@ public class RealTimeDataSoapClient {
 
     public static void main(String args[]) {
         RealTimeDataSoapClient realTimeDataSoapClient = new RealTimeDataSoapClient();
-        realTimeDataSoapClient.getRealTimeData("44");
+        realTimeDataSoapClient.getRealTimeData("4096");
     }
 
     public List<StopData> getRealTimeData(String busStopId) {
@@ -48,9 +48,11 @@ public class RealTimeDataSoapClient {
             soapResponse.writeTo(output);
             soapConnection.close();
             String response = output.toString();
-
+            if(response.length()<3519){
+                return new ArrayList<>();
+            }
             String cleanedResponse = response.substring(3397, response.length() - 122);
-            System.out.println(cleanedResponse);
+            //System.out.println(cleanedResponse);
 
             StringBuilder cleanData = new StringBuilder(cleanedResponse);
             int locStart = 0;
@@ -59,11 +61,12 @@ public class RealTimeDataSoapClient {
             while (true) {
                 locStart = cleanData.indexOf("<StopData diffgr");
                 if (locStart == -1) break;
-                int locStop = cleanData.indexOf("\">");
-                cleanData.replace(locStart, locStop + 2, "<StopData>");
+                int locStop = cleanData.indexOf(">");
+                cleanData.replace(locStart, locStop + 1, "<StopData>");
                 locStart = cleanData.indexOf("<StopData>");
                 locStop = cleanData.indexOf("</StopData>");
                 String element = cleanData.substring(locStart, locStop + 11);
+                cleanData.replace(locStart, locStop + 11,"");
                 stopData = xmlMapper.readValue(element, StopData.class);
                 stopDataList.add(stopData);
             }
