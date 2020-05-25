@@ -1,8 +1,10 @@
 package com.causefinder.schedulecreator.client;
 
 import com.causefinder.schedulecreator.soap.model.StopData;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.xml.soap.*;
@@ -15,15 +17,17 @@ import java.util.List;
 @Component
 public class RealTimeDataSoapClient {
 
-    private static XmlMapper xmlMapper = new XmlMapper();
+    private XmlMapper xmlMapper= new XmlMapper();;
 
     public static void main(String args[]) {
         RealTimeDataSoapClient realTimeDataSoapClient = new RealTimeDataSoapClient();
+        realTimeDataSoapClient.xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
         realTimeDataSoapClient.getRealTimeData("4096");
     }
 
     public List<StopData> getRealTimeData(String busStopId) {
         try {
+            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
             String soapEndpointUrl = "http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx";
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
             SOAPConnection soapConnection = soapConnectionFactory.createConnection();

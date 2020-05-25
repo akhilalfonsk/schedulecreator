@@ -5,24 +5,24 @@ import lombok.Data;
 
 @Data
 public class Stops implements Comparable<Stops> {
-    @JacksonXmlProperty(localName = "Address")
-    private String Address;
-    @JacksonXmlProperty(localName = "StopNumber")
-    private Integer StopNumber;
-    @JacksonXmlProperty(localName = "Latitude")
-    private String Latitude;
-    @JacksonXmlProperty(localName = "SeqNumber")
-    private Integer SeqNumber;
-    @JacksonXmlProperty(localName = "Direction")
-    private String Direction;
-    @JacksonXmlProperty(localName = "Longitude")
-    private String Longitude;
     @JacksonXmlProperty(localName = "Route")
-    private String Route;
+    private String route;
+    @JacksonXmlProperty(localName = "Direction")
+    private String direction;
+    @JacksonXmlProperty(localName = "SeqNumber")
+    private Integer seqNumber;
     @JacksonXmlProperty(localName = "SeqNumberExt")
-    private Integer SeqNumberExt;
+    private Integer seqNumberExt;
+    @JacksonXmlProperty(localName = "StopNumber")
+    private Integer stopId;
+    @JacksonXmlProperty(localName = "Latitude")
+    private String latitude;
+    @JacksonXmlProperty(localName = "Longitude")
+    private String longitude;
     @JacksonXmlProperty(localName = "Location")
-    private String Location;
+    private String location;
+    @JacksonXmlProperty(localName = "Address")
+    private String address;
 
     @Override
     public int compareTo(Stops o) {

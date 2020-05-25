@@ -1,8 +1,10 @@
 package com.causefinder.schedulecreator.client;
 
 import com.causefinder.schedulecreator.soap.model.Stops;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
@@ -19,16 +21,18 @@ import java.util.List;
 @CacheConfig(cacheNames = {"RouteDateCache"})
 public class StopDataByRouteAndDirectionSoapClient {
 
-    private static XmlMapper xmlMapper = new XmlMapper();
+    private XmlMapper xmlMapper= new XmlMapper();;
 
     public static void main(String args[]) {
         StopDataByRouteAndDirectionSoapClient realTimeDataSoapClient = new StopDataByRouteAndDirectionSoapClient();
+        realTimeDataSoapClient.xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
         realTimeDataSoapClient.getStopDataByRouteAndDirection("44", "I");
     }
 
     @Cacheable(value = "RouteDateCache",key = "T(java.util.Objects).hash(#p0,#p1)")
     public List<Stops> getStopDataByRouteAndDirection(String route, String direction) {
         try {
+            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,false);
             String soapEndpointUrl = "http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx";
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
             SOAPConnection soapConnection = soapConnectionFactory.createConnection();
