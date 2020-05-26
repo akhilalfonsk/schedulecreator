@@ -17,26 +17,21 @@ import java.util.List;
 @Component
 public class RealTimeDataSoapClient {
 
-    private XmlMapper xmlMapper = new XmlMapper();
-    ;
-
     public static void main(String args[]) {
         RealTimeDataSoapClient realTimeDataSoapClient = new RealTimeDataSoapClient();
-        realTimeDataSoapClient.xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        realTimeDataSoapClient.getRealTimeData("4096");
+        realTimeDataSoapClient.getRealTimeData(4096);
     }
 
     @Cacheable(cacheNames = "RealTimeStopDataCache", key = "T(java.util.Objects).hash(#p0)", cacheManager = "realTimeStopDataCacheManager")
-    public List<StopData> getRealTimeData(String busStopId) {
+    public List<StopData> getRealTimeData(Integer busStopId) {
         try {
-            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             String soapEndpointUrl = "http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx";
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
             SOAPConnection soapConnection = soapConnectionFactory.createConnection();
             SOAPMessage soapResponse = soapConnection.call(getRealTimeStopDataRequest(busStopId), soapEndpointUrl);
 
             // Print the SOAP Response
-            System.out.println(">>RTPI SOAP REQ SEND");
+            // System.out.println(">>RTPI SOAP REQ SEND");
             // soapResponse.writeTo(System.out);
             // System.out.println();
             OutputStream output = new OutputStream() {
@@ -60,6 +55,8 @@ public class RealTimeDataSoapClient {
             String cleanedResponse = response.substring(3397, response.length() - 122);
             //System.out.println(cleanedResponse);
 
+            XmlMapper xmlMapper = new XmlMapper();
+            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             StringBuilder cleanData = new StringBuilder(cleanedResponse);
             int locStart = 0;
             StopData stopData = null;
@@ -85,7 +82,7 @@ public class RealTimeDataSoapClient {
     }
 
 
-    private SOAPMessage getRealTimeStopDataRequest(String busStopId) throws Exception {
+    private SOAPMessage getRealTimeStopDataRequest(Integer busStopId) throws Exception {
         MessageFactory messageFactory = MessageFactory.newInstance();
         SOAPMessage soapMessage = messageFactory.createMessage();
 
@@ -100,7 +97,7 @@ public class RealTimeDataSoapClient {
         String soapAction = "http://dublinbus.ie/GetRealTimeStopData";
         SOAPElement getRealTimeStopData = soapBody.addChildElement("GetRealTimeStopData", dublinBusNamespace);
         SOAPElement stopId = getRealTimeStopData.addChildElement("stopId", dublinBusNamespace);
-        stopId.addTextNode(busStopId);
+        stopId.addTextNode(busStopId.toString());
         SOAPElement forceRefresh = getRealTimeStopData.addChildElement("forceRefresh", dublinBusNamespace);
         forceRefresh.addTextNode("true");
         MimeHeaders headers = soapMessage.getMimeHeaders();

@@ -18,25 +18,21 @@ import java.util.List;
 @Component
 public class StopDataByRouteAndDirectionSoapClient {
 
-    private XmlMapper xmlMapper = new XmlMapper();
-
     public static void main(String args[]) {
         StopDataByRouteAndDirectionSoapClient realTimeDataSoapClient = new StopDataByRouteAndDirectionSoapClient();
-        realTimeDataSoapClient.xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         realTimeDataSoapClient.getStopDataByRouteAndDirection("44", "I");
     }
 
     @Cacheable(cacheNames = "RouteDataCache", key = "T(java.util.Objects).hash(#p0,#p1)")
     public List<Stops> getStopDataByRouteAndDirection(String route, String direction) {
         try {
-            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             String soapEndpointUrl = "http://rtpi.dublinbus.ie/DublinBusRTPIService.asmx";
             SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
             SOAPConnection soapConnection = soapConnectionFactory.createConnection();
             SOAPMessage soapResponse = soapConnection.call(getStopDataByRouteAndDirectionRequest(route, direction), soapEndpointUrl);
 
             //Print the SOAP Response
-            System.out.println("Calling SOAP StopDataByRouteAndDirection API");
+            //System.out.println("Calling SOAP StopDataByRouteAndDirection API");
             //soapResponse.writeTo(System.out);
             //System.out.println();
             OutputStream output = new OutputStream() {
@@ -55,9 +51,13 @@ public class StopDataByRouteAndDirectionSoapClient {
             soapConnection.close();
             String response = output.toString();
 
+            if (response.length() < 1600) {
+                return new ArrayList<>();
+            }
             String cleanedResponse = response.substring(1483, response.length() - 144);
             // System.out.println(cleanedResponse);
-
+            XmlMapper xmlMapper = new XmlMapper();
+            xmlMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             StringBuilder cleanData = new StringBuilder(cleanedResponse);
             int locStart = 0;
             Stops stopData = null;
