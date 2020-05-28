@@ -2,6 +2,7 @@ package com.causefinder.schedulecreator.service;
 
 import com.causefinder.schedulecreator.client.RealTimeDataSoapClient;
 import com.causefinder.schedulecreator.client.StopDataByRouteAndDirectionSoapClient;
+import com.causefinder.schedulecreator.scheduling.FlushRouteStatusUpdates;
 import com.causefinder.schedulecreator.soap.model.StopData;
 import com.causefinder.schedulecreator.soap.model.Stops;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,9 @@ public class PathFinderService {
 
     @Autowired
     StopDataByRouteAndDirectionSoapClient stopDataByRouteAndDirection;
+
+    @Autowired
+    FlushRouteStatusUpdates flushRouteStatusUpdates;
 
     public List<StopData> getJourneyProgressReport(String route, String direction, Integer journeyRef) {
         List<Stops> routeBusStops = stopDataByRouteAndDirection.getStopDataByRouteAndDirection(route, direction);
@@ -56,7 +60,7 @@ public class PathFinderService {
     }
 
     public void poolDeltaStatus(Map<Stops, List<StopData>> deltaStatus) {
-
+        flushRouteStatusUpdates.addDeltaStatusToBuffer(deltaStatus);
     }
 
 }
