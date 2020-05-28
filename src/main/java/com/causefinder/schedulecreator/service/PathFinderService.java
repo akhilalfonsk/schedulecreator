@@ -7,7 +7,9 @@ import com.causefinder.schedulecreator.soap.model.Stops;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.AbstractMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,5 +26,26 @@ public class PathFinderService {
                 .flatMap(routeBusStop -> realTimeDataSoapClient.getRealTimeData(routeBusStop.getStopId())
                         .stream().filter(stopData -> stopData.getDatedVehicleJourneyRef().equals(journeyRef)))
                 .collect(Collectors.toList());
+    }
+
+    public Map<Stops, List<StopData>> getCurrentRouteStatusReport(String route, String direction) {
+        List<Stops> routeBusStops = stopDataByRouteAndDirection.getStopDataByRouteAndDirection(route, direction);
+        return routeBusStops.parallelStream()
+                .map(routeBusStop -> {
+                    List<StopData> filteredStopData = realTimeDataSoapClient.getRealTimeData(routeBusStop.getStopId())
+                            .stream().filter(stopData -> stopData.getRouteId().equalsIgnoreCase(route)
+                                    && stopData.getDirection().equalsIgnoreCase(direction)).collect(Collectors.toList());
+                    return new AbstractMap.SimpleEntry<Stops, List<StopData>>(routeBusStop, filteredStopData);
+                })
+                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
+    }
+
+    public Map<Stops, List<StopData>> findDeltaStatus(Map<Stops, List<StopData>> previous, Map<Stops, List<StopData>> current) {
+        return null;
+    }
+
+    public boolean isLastStop(String route, String direction, Integer stopId) {
+        Stops finalStop = stopDataByRouteAndDirection.getStopDataByRouteAndDirection(route, direction).stream().max(Stops::compareTo).get();
+        return finalStop.getStopId().equals(stopId);
     }
 }

@@ -30,4 +30,28 @@ public class Stops implements Comparable<Stops> {
         else if (!getSeqNumber().equals(o.getSeqNumber())) return getSeqNumber().compareTo(o.getSeqNumber());
         else return getSeqNumberExt().compareTo(getSeqNumberExt());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Stops stops = (Stops) o;
+
+        if (!route.equals(stops.route)) return false;
+        if (!direction.equals(stops.direction)) return false;
+        if (!seqNumber.equals(stops.seqNumber)) return false;
+        if (!seqNumberExt.equals(stops.seqNumberExt)) return false;
+        return stopId.equals(stops.stopId);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = route.hashCode();
+        result = 31 * result + direction.hashCode();
+        result = 31 * result + seqNumber.hashCode();
+        result = 31 * result + seqNumberExt.hashCode();
+        result = 31 * result + stopId.hashCode();
+        return result;
+    }
 }
