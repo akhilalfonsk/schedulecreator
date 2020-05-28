@@ -55,7 +55,7 @@ public class PathFinderService {
         return finalStop.getStopId().equals(stopId);
     }
 
-    public void saveDeltaStatus(Map<Stops, List<StopData>> deltaStatus) {
+    public void poolDeltaStatus(Map<Stops, List<StopData>> deltaStatus) {
 
     }
 

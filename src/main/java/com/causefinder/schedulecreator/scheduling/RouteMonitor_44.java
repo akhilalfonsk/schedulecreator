@@ -4,11 +4,13 @@ import com.causefinder.schedulecreator.service.PathFinderService;
 import com.causefinder.schedulecreator.soap.model.StopData;
 import com.causefinder.schedulecreator.soap.model.Stops;
 import lombok.extern.slf4j.Slf4j;
+import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -18,7 +20,10 @@ import java.util.Objects;
 @Profile("44")
 public class RouteMonitor_44 {
     public static final int FREQUENCY_IN_SEC = 240;
-
+    public List<Pair<String, String>> MONITORED_ROUTE_LIST = Arrays.asList(
+            Pair.with("44", "I"),
+            Pair.with("44", "O")
+    );
     @Autowired
     PathFinderService pathFinderService;
 
@@ -27,31 +32,21 @@ public class RouteMonitor_44 {
 
     @Scheduled(initialDelay = FREQUENCY_IN_SEC * 500, fixedRate = FREQUENCY_IN_SEC * 1000)
     public void syncMonitorRouteInbound() {
-        log.info("Updating Route 44 stop started-Inbound");
-        Map<Stops, List<StopData>> currentRouteStatus = pathFinderService.getCurrentRouteStatusReport("44", "I");
-        if (Objects.nonNull(previousRouteStatusInbound)) {
-            Map<Stops, List<StopData>> deltaStatus = pathFinderService.findDeltaStatus(previousRouteStatusInbound, currentRouteStatus);
-            pathFinderService.saveDeltaStatus(deltaStatus);
-        }
-        previousRouteStatusInbound = currentRouteStatus;
-        log.info("Updating Route 44 ended-Inbound");
-    }
-
-    @Scheduled(initialDelay = FREQUENCY_IN_SEC * 1000, fixedRate = FREQUENCY_IN_SEC * 1000)
-    public void syncMonitorRouteOutBound() {
-        log.info("Updating Route 44 stop started-Outbound");
-        Map<Stops, List<StopData>> currentRouteStatus = pathFinderService.getCurrentRouteStatusReport("44", "O");
-        log.info("Updating Route 44 ended-Outbound");
+        log.info("Updating route list started");
+        MONITORED_ROUTE_LIST.parallelStream().forEach(monitoredRoute ->
+                updateRouteStatusSaveDelta(monitoredRoute.getValue0(), monitoredRoute.getValue1()));
+        log.info("Updating route list ended");
     }
 
     private void updateRouteStatusSaveDelta(String route, String direction) {
-        log.info("Updating Route " + route + " stop started-Inbound");
-        Map<Stops, List<StopData>> currentRouteStatus = pathFinderService.getCurrentRouteStatusReport("44", "I");
+        String dirStr = "I".equalsIgnoreCase(direction) ? "Inbound" : "Outbound";
+        log.info("Updating {}-Route:{} status started", dirStr, route);
+        Map<Stops, List<StopData>> currentRouteStatus = pathFinderService.getCurrentRouteStatusReport(route, direction);
         if (Objects.nonNull(previousRouteStatusInbound)) {
             Map<Stops, List<StopData>> deltaStatus = pathFinderService.findDeltaStatus(previousRouteStatusInbound, currentRouteStatus);
-            pathFinderService.saveDeltaStatus(deltaStatus);
+            pathFinderService.poolDeltaStatus(deltaStatus);
         }
         previousRouteStatusInbound = currentRouteStatus;
-        log.info("Updating Route 44 ended-Inbound");
+        log.info("Updating {}-Route:{} status ended", dirStr, route);
     }
 }
