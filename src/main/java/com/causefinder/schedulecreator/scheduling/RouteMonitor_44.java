@@ -19,7 +19,7 @@ import java.util.Objects;
 @Slf4j
 @Profile("44")
 public class RouteMonitor_44 {
-    public static final int FREQUENCY_IN_SEC = 240;
+    public static final int MONITOR_FREQUENCY_IN_MIN = 3;
     public List<Pair<String, String>> MONITORED_ROUTE_LIST = Arrays.asList(
             Pair.with("44", "I"),
             Pair.with("44", "O")
@@ -30,7 +30,7 @@ public class RouteMonitor_44 {
     private Map<Stops, List<StopData>> previousRouteStatusInbound = null;
     private Map<Stops, List<StopData>> previousRouteStatusOutbound = null;
 
-    @Scheduled(initialDelay = FREQUENCY_IN_SEC * 500, fixedRate = FREQUENCY_IN_SEC * 1000)
+    @Scheduled(initialDelay = MONITOR_FREQUENCY_IN_MIN * 30000, fixedRate = MONITOR_FREQUENCY_IN_MIN * 60000)
     public void syncMonitorRouteInbound() {
         log.info("Updating route list started");
         MONITORED_ROUTE_LIST.parallelStream().forEach(monitoredRoute ->
