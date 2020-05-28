@@ -29,11 +29,11 @@ public class RouteMonitor_44 {
     public void syncMonitorRouteInbound() {
         log.info("Updating Route 44 stop started-Inbound");
         Map<Stops, List<StopData>> currentRouteStatus = pathFinderService.getCurrentRouteStatusReport("44", "I");
-        if (Objects.isNull(previousRouteStatusInbound)) {
-            previousRouteStatusInbound = currentRouteStatus;
-        } else {
-
+        if (Objects.nonNull(previousRouteStatusInbound)) {
+            Map<Stops, List<StopData>> deltaStatus = pathFinderService.findDeltaStatus(previousRouteStatusInbound, currentRouteStatus);
+            pathFinderService.saveDeltaStatus(deltaStatus);
         }
+        previousRouteStatusInbound = currentRouteStatus;
         log.info("Updating Route 44 ended-Inbound");
     }
 
@@ -42,5 +42,16 @@ public class RouteMonitor_44 {
         log.info("Updating Route 44 stop started-Outbound");
         Map<Stops, List<StopData>> currentRouteStatus = pathFinderService.getCurrentRouteStatusReport("44", "O");
         log.info("Updating Route 44 ended-Outbound");
+    }
+
+    private void updateRouteStatusSaveDelta(String route, String direction) {
+        log.info("Updating Route " + route + " stop started-Inbound");
+        Map<Stops, List<StopData>> currentRouteStatus = pathFinderService.getCurrentRouteStatusReport("44", "I");
+        if (Objects.nonNull(previousRouteStatusInbound)) {
+            Map<Stops, List<StopData>> deltaStatus = pathFinderService.findDeltaStatus(previousRouteStatusInbound, currentRouteStatus);
+            pathFinderService.saveDeltaStatus(deltaStatus);
+        }
+        previousRouteStatusInbound = currentRouteStatus;
+        log.info("Updating Route 44 ended-Inbound");
     }
 }

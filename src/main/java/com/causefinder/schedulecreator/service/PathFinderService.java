@@ -41,11 +41,22 @@ public class PathFinderService {
     }
 
     public Map<Stops, List<StopData>> findDeltaStatus(Map<Stops, List<StopData>> previous, Map<Stops, List<StopData>> current) {
-        return null;
+        return previous.keySet().parallelStream().map(busStop -> {
+            List<StopData> prevStatus = previous.get(busStop);
+            List<StopData> currStatus = current.get(busStop);
+            return new AbstractMap.SimpleEntry<Stops, List<StopData>>(busStop, prevStatus.stream()
+                    .filter(prevStatusItem -> !currStatus.contains(prevStatusItem)).collect(Collectors.toList()));
+        })
+                .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
     public boolean isLastStop(String route, String direction, Integer stopId) {
         Stops finalStop = stopDataByRouteAndDirection.getStopDataByRouteAndDirection(route, direction).stream().max(Stops::compareTo).get();
         return finalStop.getStopId().equals(stopId);
     }
+
+    public void saveDeltaStatus(Map<Stops, List<StopData>> deltaStatus) {
+
+    }
+
 }

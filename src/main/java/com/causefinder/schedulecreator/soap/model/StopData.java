@@ -50,4 +50,35 @@ public class StopData {
 
     @JacksonXmlProperty(localName = "ServiceDelivery_ResponseTimestamp")
     private Date recordedAtTime;
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        StopData stopData = (StopData) o;
+
+        if (!operatorId.equals(stopData.operatorId)) return false;
+        if (!routeId.equals(stopData.routeId)) return false;
+        if (!direction.equals(stopData.direction)) return false;
+        if (!destinationId.equals(stopData.destinationId)) return false;
+        if (!stopId.equals(stopData.stopId)) return false;
+        if (!dataFrameRef.equals(stopData.dataFrameRef)) return false;
+        if (!datedVehicleJourneyRef.equals(stopData.datedVehicleJourneyRef)) return false;
+        return visitNumber.equals(stopData.visitNumber);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = operatorId.hashCode();
+        result = 31 * result + routeId.hashCode();
+        result = 31 * result + direction.hashCode();
+        result = 31 * result + destinationId.hashCode();
+        result = 31 * result + stopId.hashCode();
+        result = 31 * result + dataFrameRef.hashCode();
+        result = 31 * result + datedVehicleJourneyRef.hashCode();
+        result = 31 * result + visitNumber.hashCode();
+        return result;
+    }
 }
