@@ -6,7 +6,6 @@ import com.causefinder.schedulecreator.soap.model.Stops;
 import lombok.extern.slf4j.Slf4j;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +16,8 @@ import java.util.Objects;
 
 @Component
 @Slf4j
-@Profile("44")
-public class RouteMonitor_44 {
-    public static final int MONITOR_FREQUENCY_IN_MIN = 3;
+public class RouteMonitor {
+    public static final int MONITOR_FREQUENCY_IN_MIN = 1;
     public List<Pair<String, String>> MONITORED_ROUTE_LIST = Arrays.asList(
             Pair.with("44", "I"),
             Pair.with("44", "O")
