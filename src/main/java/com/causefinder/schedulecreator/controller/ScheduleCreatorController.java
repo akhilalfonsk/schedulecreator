@@ -2,8 +2,10 @@ package com.causefinder.schedulecreator.controller;
 
 import com.causefinder.schedulecreator.client.RealTimeDataSoapClient;
 import com.causefinder.schedulecreator.client.StopDataByRouteAndDirectionSoapClient;
+import com.causefinder.schedulecreator.scheduling.FlushRouteStatusUpdates;
 import com.causefinder.schedulecreator.service.PathFinderService;
 import com.causefinder.schedulecreator.soap.model.StopData;
+import com.causefinder.schedulecreator.soap.model.StopEvent;
 import com.causefinder.schedulecreator.soap.model.Stops;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,6 +28,9 @@ public class ScheduleCreatorController {
     @Autowired
     PathFinderService pathFinderService;
 
+    @Autowired
+    FlushRouteStatusUpdates flushRouteStatusUpdates;
+
 
     @RequestMapping(value = "/realtime", method = RequestMethod.GET)
     public List<StopData> viewRealTimeData(@RequestParam Integer busStopId) {
@@ -42,4 +47,8 @@ public class ScheduleCreatorController {
         return pathFinderService.getJourneyProgressReport(route, direction, journeyRef);
     }
 
+    @RequestMapping(value = "/events", method = RequestMethod.GET)
+    public List<StopEvent> viewStopEvents() {
+        return flushRouteStatusUpdates.viewStopEvents();
+    }
 }

@@ -51,6 +51,7 @@ public class PathFinderService {
             return new AbstractMap.SimpleEntry<Stops, List<StopData>>(busStop, prevStatus.stream()
                     .filter(prevStatusItem -> !currStatus.contains(prevStatusItem)).collect(Collectors.toList()));
         })
+                .filter(entry -> !entry.getValue().isEmpty())
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
