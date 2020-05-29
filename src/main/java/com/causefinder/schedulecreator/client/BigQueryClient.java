@@ -33,7 +33,10 @@ public class BigQueryClient {
         if (response.hasErrors()) {
             for (Map.Entry<Long, List<BigQueryError>> entry : response.getInsertErrors().entrySet()) {
                 StringBuilder errorString = new StringBuilder("Error in Pushing data to GCP:");
-                log.warn("Error in Pushing data to GCP: {} ");
+                errorString.append("[").append(entry.getKey()).append("=>[");
+                entry.getValue().stream().forEach(err -> errorString.append(err.getMessage()).append(","));
+                errorString.append("]]");
+                log.warn("Error in Pushing data to GCP: {} ", errorString.toString());
             }
         }
     }
