@@ -7,6 +7,7 @@ import com.causefinder.schedulecreator.soap.model.Stops;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,20 +20,22 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FlushRouteStatusUpdates {
     public static final int DATA_FLUSH_FREQUENCY_IN_MIN = 5;
-
+    public static final int DATA_FLUSH_THRESHOLD = 50;
     private LinkedList<Map<Stops, List<StopData>>> bufferForRouteStatusUpdates = new LinkedList<>();
     private ModelMapper modelMapper = new ModelMapper();
 
     @Autowired
     BigQueryClient bigQueryClient;
 
-    // @Scheduled(initialDelay = DATA_FLUSH_FREQUENCY_IN_MIN * 30000, fixedRate = DATA_FLUSH_FREQUENCY_IN_MIN * 60000)
+    @Scheduled(initialDelay = DATA_FLUSH_FREQUENCY_IN_MIN * 30000, fixedRate = DATA_FLUSH_FREQUENCY_IN_MIN * 60000)
     public void syncMonitorRouteInbound() {
         log.info("Flushing route updates started");
         List<Map<Stops, List<StopData>>> recentRouteStatusUpdates = new ArrayList<>();
         synchronized (bufferForRouteStatusUpdates) {
-            recentRouteStatusUpdates = (List<Map<Stops, List<StopData>>>) bufferForRouteStatusUpdates.clone();
-            bufferForRouteStatusUpdates.clear();
+            if (bufferForRouteStatusUpdates.size() > DATA_FLUSH_THRESHOLD) {
+                recentRouteStatusUpdates = (List<Map<Stops, List<StopData>>>) bufferForRouteStatusUpdates.clone();
+                bufferForRouteStatusUpdates.clear();
+            }
         }
         bigQueryClient.pushDataToGCP(convertToStopEvents(recentRouteStatusUpdates));
 
