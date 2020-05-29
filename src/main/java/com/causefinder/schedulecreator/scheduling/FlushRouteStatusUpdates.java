@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class FlushRouteStatusUpdates {
-    public static final int DATA_FLUSH_FREQUENCY_IN_MIN = 5;
-    public static final int DATA_FLUSH_THRESHOLD = 50;
+    public static final int DATA_FLUSH_FREQUENCY_IN_MIN = 1;
+    public static final int DATA_FLUSH_THRESHOLD = 10;
     private LinkedList<Map<Stops, List<StopData>>> bufferForRouteStatusUpdates = new LinkedList<>();
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -31,13 +31,13 @@ public class FlushRouteStatusUpdates {
     public void syncMonitorRouteInbound() {
         log.info("Flushing route updates started");
         List<Map<Stops, List<StopData>>> recentRouteStatusUpdates = new ArrayList<>();
-        synchronized (bufferForRouteStatusUpdates) {
-            if (bufferForRouteStatusUpdates.size() > DATA_FLUSH_THRESHOLD) {
+        if (bufferForRouteStatusUpdates.size() > DATA_FLUSH_THRESHOLD) {
+            synchronized (bufferForRouteStatusUpdates) {
                 recentRouteStatusUpdates = (List<Map<Stops, List<StopData>>>) bufferForRouteStatusUpdates.clone();
                 bufferForRouteStatusUpdates.clear();
             }
+            bigQueryClient.pushDataToGCP(convertToStopEvents(recentRouteStatusUpdates));
         }
-        bigQueryClient.pushDataToGCP(convertToStopEvents(recentRouteStatusUpdates));
 
     }
 
