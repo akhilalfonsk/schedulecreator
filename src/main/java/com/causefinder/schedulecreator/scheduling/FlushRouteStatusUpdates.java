@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,17 @@ public class FlushRouteStatusUpdates {
         }
     }
 
+    @PreDestroy
+    private void flushData() {
+        List<Map<Stops, List<StopData>>> recentRouteStatusUpdates;
+        synchronized (bufferForRouteStatusUpdates) {
+            recentRouteStatusUpdates = (List<Map<Stops, List<StopData>>>) bufferForRouteStatusUpdates.clone();
+            bufferForRouteStatusUpdates.clear();
+        }
+        List<StopEvent> stopEvents = convertToStopEvents(recentRouteStatusUpdates);
+        if (!stopEvents.isEmpty()) bigQueryClient.pushDataToGCP(stopEvents);
+    }
+
     public void addDeltaStatusToBuffer(Map<Stops, List<StopData>> item) {
         synchronized (bufferForRouteStatusUpdates) {
             bufferForRouteStatusUpdates.addLast(item);
@@ -60,11 +72,6 @@ public class FlushRouteStatusUpdates {
                         entry.getValue().stream().map(stopData -> {
                             StopEvent stopEvent = modelMapper.map(stopData, StopEvent.class);
                             modelMapper.map(entry.getKey(), stopEvent);
-                            /*stopEvent.setAimedArrivalTime(Date.fromJavaUtilDate(stopData.getAimedArrivalTime()));
-                            stopEvent.setExpectedArrivalTime(Date.fromJavaUtilDate(stopData.getExpectedArrivalTime()));
-                            stopEvent.setAimedDepartureTime(Date.fromJavaUtilDate(stopData.getAimedDepartureTime()));
-                            stopEvent.setExpectedDepartureTime(Date.fromJavaUtilDate(stopData.getExpectedDepartureTime()));
-                            stopEvent.setRecordedAtTime(Date.fromJavaUtilDate(stopData.getRecordedAtTime()));*/
                             return stopEvent;
                         })
                 )).collect(Collectors.toList());

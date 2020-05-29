@@ -6,38 +6,33 @@ import com.causefinder.schedulecreator.soap.model.Stops;
 import lombok.extern.slf4j.Slf4j;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import javax.annotation.PostConstruct;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Component
 @Slf4j
 public class RouteMonitor {
     public static final int MONITOR_FREQUENCY_IN_MIN = 1;
-    public List<Pair<String, String>> MONITORED_ROUTE_LIST = Arrays.asList(
-            Pair.with("44", "I"),
-            Pair.with("44", "O"),
-            Pair.with("41", "I"),
-            Pair.with("41", "O"),
-            Pair.with("42", "I"),
-            Pair.with("42", "O"),
-            Pair.with("43", "I"),
-            Pair.with("43", "O"),
-            Pair.with("16", "I"),
-            Pair.with("16", "O"),
-            Pair.with("25", "I"),
-            Pair.with("25", "O")
-    );
+    public List<Pair<String, String>> monitoredRoutes;
     @Autowired
     PathFinderService pathFinderService;
+
+    @Value("${routemonitor.routes}")
+    private List<String> monitoredRoutesIdList;
 
     private Map<Pair, Map<Stops, List<StopData>>> previousRouteStatus = new HashMap<>();
 
     @Scheduled(initialDelay = MONITOR_FREQUENCY_IN_MIN * 30000, fixedRate = MONITOR_FREQUENCY_IN_MIN * 60000)
     public void syncMonitorRouteInbound() {
         log.info("Updating route list started");
-        MONITORED_ROUTE_LIST.parallelStream().forEach(this::updateRouteStatusSaveDelta);
+        monitoredRoutes.parallelStream().forEach(this::updateRouteStatusSaveDelta);
         log.info("Updating route list ended");
     }
 
@@ -54,4 +49,13 @@ public class RouteMonitor {
         previousRouteStatus.put(monitoredRoute, currentRouteStatus);
         log.info("Updating {}-Route:{} status ended", dirStr, route);
     }
+
+    @PostConstruct
+    private void init() {
+        monitoredRoutesIdList.stream().forEach(route -> {
+            monitoredRoutes.add(new Pair(route, "I"));
+            monitoredRoutes.add(new Pair(route, "O"));
+        });
+    }
+
 }

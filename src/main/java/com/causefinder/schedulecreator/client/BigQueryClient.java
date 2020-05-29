@@ -36,7 +36,6 @@ public class BigQueryClient {
             datMap.put("aimedDepartureTime", Timestamp.of(stopEvent.getAimedDepartureTime()).toString());
             datMap.put("expectedDepartureTime", Timestamp.of(stopEvent.getExpectedDepartureTime()).toString());
             datMap.put("recordedAtTime", Timestamp.of(stopEvent.getRecordedAtTime()).toString());
-            //  Map<String,Object> datMapHash= new HashMap<>(datMap);
             builder.addRow(datMap);
         });
         InsertAllResponse response = bigQueryClient.insertAll(builder.build());
