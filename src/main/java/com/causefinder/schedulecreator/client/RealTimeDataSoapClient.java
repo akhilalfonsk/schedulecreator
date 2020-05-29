@@ -71,6 +71,8 @@ public class RealTimeDataSoapClient {
                 String element = cleanData.substring(locStart, locStop + 11);
                 cleanData.replace(locStart, locStop + 11, "");
                 stopData = xmlMapper.readValue(element, StopData.class);
+                String dirStr = stopData.getDirection().equalsIgnoreCase("Inbound") ? "I" : "O";
+                stopData.setDirection(dirStr);
                 stopDataList.add(stopData);
             }
             return stopDataList;
