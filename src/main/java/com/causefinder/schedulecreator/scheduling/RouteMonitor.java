@@ -22,12 +22,12 @@ public class RouteMonitor {
     @Value("${routemonitor.routes}")
     private List<String> monitoredRoutesIdList;
 
+    private List<Pair<String, String>> monitoredRoutes = new ArrayList<>();
     private Map<Pair, Map<Stops, List<StopData>>> previousRouteStatus = new HashMap<>();
 
     @Scheduled(initialDelay = MONITOR_FREQUENCY_IN_MIN * 30000, fixedRate = MONITOR_FREQUENCY_IN_MIN * 60000)
     public void syncMonitorRouteInbound() {
         log.info("Updating route list started");
-        List<Pair<String, String>> monitoredRoutes = new ArrayList<>();
         if (monitoredRoutes.isEmpty()) {
             monitoredRoutesIdList.stream().forEach(route -> {
                 monitoredRoutes.add(Pair.with(route, "I"));
