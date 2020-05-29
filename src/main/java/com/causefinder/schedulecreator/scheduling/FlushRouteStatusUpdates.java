@@ -8,7 +8,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -24,7 +27,7 @@ public class FlushRouteStatusUpdates {
         log.info("Flushing route updates started");
         List<Map<Stops, List<StopData>>> recentRouteStatusUpdates = new ArrayList<>();
         synchronized (bufferForRouteStatusUpdates) {
-            Collections.copy(recentRouteStatusUpdates, bufferForRouteStatusUpdates);
+            //Collections.copy(recentRouteStatusUpdates, bufferForRouteStatusUpdates);
             // bufferForRouteStatusUpdates.clear();
         }
 
@@ -37,9 +40,9 @@ public class FlushRouteStatusUpdates {
     }
 
     public List<StopEvent> viewStopEvents() {
-        List<Map<Stops, List<StopData>>> recentRouteStatusUpdates = new ArrayList<>();
+        List<Map<Stops, List<StopData>>> recentRouteStatusUpdates;
         synchronized (bufferForRouteStatusUpdates) {
-            Collections.copy(recentRouteStatusUpdates, bufferForRouteStatusUpdates);
+            recentRouteStatusUpdates = (List<Map<Stops, List<StopData>>>) bufferForRouteStatusUpdates.clone();
         }
         return convertToStopEvents(recentRouteStatusUpdates);
     }
