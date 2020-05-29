@@ -1,7 +1,8 @@
 package com.causefinder.schedulecreator.soap.model;
 
-import com.google.cloud.Date;
 import lombok.Data;
+
+import java.sql.Date;
 
 @Data
 public class StopEvent {

@@ -2,6 +2,7 @@ package com.causefinder.schedulecreator.client;
 
 import com.causefinder.schedulecreator.soap.model.StopEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.cloud.Timestamp;
 import com.google.cloud.bigquery.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,16 @@ public class BigQueryClient {
     public void pushDataToGCP(List<StopEvent> stopEvents) {
         TableId tableId = TableId.of(datasetName, tableName);
         InsertAllRequest.Builder builder = InsertAllRequest.newBuilder(tableId);
-        stopEvents.parallelStream().forEach(stopEvent -> builder.addRow(oMapper.convertValue(stopEvent, Map.class)));
+        stopEvents.stream().forEach(stopEvent -> {
+            Map<String, Object> datMap = oMapper.convertValue(stopEvent, Map.class);
+            datMap.put("aimedArrivalTime", Timestamp.of(stopEvent.getAimedArrivalTime()).toString());
+            datMap.put("expectedArrivalTime", Timestamp.of(stopEvent.getExpectedArrivalTime()).toString());
+            datMap.put("aimedDepartureTime", Timestamp.of(stopEvent.getAimedDepartureTime()).toString());
+            datMap.put("expectedDepartureTime", Timestamp.of(stopEvent.getExpectedDepartureTime()).toString());
+            datMap.put("recordedAtTime", Timestamp.of(stopEvent.getRecordedAtTime()).toString());
+            //  Map<String,Object> datMapHash= new HashMap<>(datMap);
+            builder.addRow(datMap);
+        });
         InsertAllResponse response = bigQueryClient.insertAll(builder.build());
         if (response.hasErrors()) {
             for (Map.Entry<Long, List<BigQueryError>> entry : response.getInsertErrors().entrySet()) {

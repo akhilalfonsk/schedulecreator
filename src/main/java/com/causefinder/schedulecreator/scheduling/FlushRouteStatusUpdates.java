@@ -4,7 +4,6 @@ import com.causefinder.schedulecreator.client.BigQueryClient;
 import com.causefinder.schedulecreator.soap.model.StopData;
 import com.causefinder.schedulecreator.soap.model.StopEvent;
 import com.causefinder.schedulecreator.soap.model.Stops;
-import com.google.cloud.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,11 +60,11 @@ public class FlushRouteStatusUpdates {
                         entry.getValue().stream().map(stopData -> {
                             StopEvent stopEvent = modelMapper.map(stopData, StopEvent.class);
                             modelMapper.map(entry.getKey(), stopEvent);
-                            stopEvent.setAimedArrivalTime(Date.fromJavaUtilDate(stopData.getAimedArrivalTime()));
+                            /*stopEvent.setAimedArrivalTime(Date.fromJavaUtilDate(stopData.getAimedArrivalTime()));
                             stopEvent.setExpectedArrivalTime(Date.fromJavaUtilDate(stopData.getExpectedArrivalTime()));
                             stopEvent.setAimedDepartureTime(Date.fromJavaUtilDate(stopData.getAimedDepartureTime()));
                             stopEvent.setExpectedDepartureTime(Date.fromJavaUtilDate(stopData.getExpectedDepartureTime()));
-                            stopEvent.setRecordedAtTime(Date.fromJavaUtilDate(stopData.getRecordedAtTime()));
+                            stopEvent.setRecordedAtTime(Date.fromJavaUtilDate(stopData.getRecordedAtTime()));*/
                             return stopEvent;
                         })
                 )).collect(Collectors.toList());
