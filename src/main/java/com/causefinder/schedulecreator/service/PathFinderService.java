@@ -41,7 +41,6 @@ public class PathFinderService {
                                     && stopData.getDirection().equalsIgnoreCase(direction)).collect(Collectors.toList());
                     return new AbstractMap.SimpleEntry<Stops, List<StopData>>(routeBusStop, filteredStopData);
                 })
-                .filter(entry -> !entry.getValue().isEmpty())
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
 
