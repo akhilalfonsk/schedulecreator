@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FlushRouteStatusUpdates {
     public static final int DATA_FLUSH_FREQUENCY_IN_MIN = 1;
-    public static final int DATA_FLUSH_THRESHOLD = 10;
+    public static final int DATA_FLUSH_THRESHOLD = 1;
     private LinkedList<Map<Stops, List<StopData>>> bufferForRouteStatusUpdates = new LinkedList<>();
     private ModelMapper modelMapper = new ModelMapper();
 
@@ -30,15 +29,15 @@ public class FlushRouteStatusUpdates {
     @Scheduled(initialDelay = DATA_FLUSH_FREQUENCY_IN_MIN * 30000, fixedRate = DATA_FLUSH_FREQUENCY_IN_MIN * 60000)
     public void syncMonitorRouteInbound() {
         log.info("Flushing route updates started");
-        List<Map<Stops, List<StopData>>> recentRouteStatusUpdates = new ArrayList<>();
+        List<Map<Stops, List<StopData>>> recentRouteStatusUpdates;
         if (bufferForRouteStatusUpdates.size() > DATA_FLUSH_THRESHOLD) {
             synchronized (bufferForRouteStatusUpdates) {
                 recentRouteStatusUpdates = (List<Map<Stops, List<StopData>>>) bufferForRouteStatusUpdates.clone();
                 bufferForRouteStatusUpdates.clear();
             }
-            bigQueryClient.pushDataToGCP(convertToStopEvents(recentRouteStatusUpdates));
+            List<StopEvent> stopEvents = convertToStopEvents(recentRouteStatusUpdates);
+            if (!stopEvents.isEmpty()) bigQueryClient.pushDataToGCP(stopEvents);
         }
-
     }
 
     public void addDeltaStatusToBuffer(Map<Stops, List<StopData>> item) {
@@ -56,7 +55,7 @@ public class FlushRouteStatusUpdates {
     }
 
     private List<StopEvent> convertToStopEvents(List<Map<Stops, List<StopData>>> recentRouteStatusUpdates) {
-        return recentRouteStatusUpdates.parallelStream()
+        return recentRouteStatusUpdates.stream()
                 .flatMap(chunk -> chunk.entrySet().stream().flatMap(entry ->
                         entry.getValue().stream().map(stopData -> {
                             StopEvent stopEvent = modelMapper.map(stopData, StopEvent.class);

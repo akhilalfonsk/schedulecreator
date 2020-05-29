@@ -35,11 +35,11 @@ public class PathFinderService {
     public Map<Stops, List<StopData>> getCurrentRouteStatusReport(String route, String direction) {
         List<Stops> routeBusStops = stopDataByRouteAndDirection.getStopDataByRouteAndDirection(route, direction);
         return routeBusStops.parallelStream()
-                .map(routeBusStop -> {
-                    List<StopData> filteredStopData = realTimeDataSoapClient.getRealTimeData(routeBusStop.getStopId())
+                .map(busStop -> {
+                    List<StopData> filteredStopData = realTimeDataSoapClient.getRealTimeData(busStop.getStopId())
                             .stream().filter(stopData -> stopData.getRouteId().equalsIgnoreCase(route)
                                     && stopData.getDirection().equalsIgnoreCase(direction)).collect(Collectors.toList());
-                    return new AbstractMap.SimpleEntry<Stops, List<StopData>>(routeBusStop, filteredStopData);
+                    return new AbstractMap.SimpleEntry<Stops, List<StopData>>(busStop, filteredStopData);
                 })
                 .collect(Collectors.toMap(AbstractMap.SimpleEntry::getKey, AbstractMap.SimpleEntry::getValue));
     }
