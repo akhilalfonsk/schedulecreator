@@ -4,6 +4,7 @@ import com.causefinder.schedulecreator.service.PathFinderService;
 import com.causefinder.schedulecreator.soap.model.StopData;
 import com.causefinder.schedulecreator.soap.model.Stops;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.StopWatch;
 import org.javatuples.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +17,7 @@ import java.util.*;
 @Slf4j
 public class RouteMonitor {
     public static final int MONITOR_FREQUENCY_IN_MIN = 1;
+    private static String TIME_PATTERN = "yyyy-MM-dd'T'HH:mm:ss";
     @Autowired
     PathFinderService pathFinderService;
 
@@ -27,7 +29,10 @@ public class RouteMonitor {
 
     @Scheduled(initialDelay = MONITOR_FREQUENCY_IN_MIN * 30000, fixedRate = MONITOR_FREQUENCY_IN_MIN * 60000)
     public void syncMonitorRouteInbound() {
-        log.info("Updating route list started");
+
+        StopWatch watch = new StopWatch();
+        watch.start();
+        log.info("Status monitoring of routes {} started", monitoredRoutesIdList);
         if (monitoredRoutes.isEmpty()) {
             monitoredRoutesIdList.stream().forEach(route -> {
                 monitoredRoutes.add(Pair.with(route, "I"));
@@ -35,21 +40,25 @@ public class RouteMonitor {
             });
         }
         monitoredRoutes.parallelStream().forEach(this::updateRouteStatusSaveDelta);
-        log.info("Updating route list ended");
+        watch.stop();
+        log.info("Status monitoring of {} completed successfully.Time Taken:{}", monitoredRoutesIdList, watch.formatTime());
     }
 
     private void updateRouteStatusSaveDelta(Pair<String, String> monitoredRoute) {
         String route = monitoredRoute.getValue0();
         String direction = monitoredRoute.getValue1();
         String dirStr = "I".equalsIgnoreCase(direction) ? "Inbound" : "Outbound";
-        log.info("Updating {}-Route:{} status started", dirStr, route);
+        StopWatch watch = new StopWatch();
+        watch.start();
+        //log.info("Monitoring thread for Route:({},{}) started", route,dirStr);
         Map<Stops, List<StopData>> currentRouteStatus = pathFinderService.getCurrentRouteStatusReport(route, direction);
         if (Objects.nonNull(previousRouteStatus.get(monitoredRoute))) {
             Map<Stops, List<StopData>> deltaStatus = pathFinderService.findDeltaStatus(previousRouteStatus.get(monitoredRoute), currentRouteStatus);
             pathFinderService.poolDeltaStatus(deltaStatus);
         }
         previousRouteStatus.put(monitoredRoute, currentRouteStatus);
-        log.info("Updating {}-Route:{} status ended", dirStr, route);
+        watch.stop();
+        log.info("Monitoring thread for Route:({},{}) completed. Time taken:{}", route, dirStr, watch.formatTime());
     }
 
 }
